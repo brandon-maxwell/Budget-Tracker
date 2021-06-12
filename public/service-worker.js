@@ -3,9 +3,10 @@ const FILES_TO_CACHE = [
     '/db.js',
     '/index.html',
     '/index.js',    
-    '/style.css',
+    '/styles.css',
+    '/manifest.webmanifest',
     '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png',
+    '/icons/icon-512x512.png'
   ];
   
   const PRECACHE = 'precache-v1';
@@ -15,9 +16,12 @@ const FILES_TO_CACHE = [
     event.waitUntil(
       caches
         .open(PRECACHE)
-        .then((cache) => cache.addAll(FILES_TO_CACHE))
+        .then((cache) =>{
+           cache.addAll(FILES_TO_CACHE)
+          })
         .then(self.skipWaiting())
     );
+    
   });
   
   // The activate handler takes care of cleaning up old caches.
@@ -27,7 +31,7 @@ const FILES_TO_CACHE = [
       caches
         .keys()
         .then((cacheNames) => {
-          return cacheNames.filter((cacheName) => !currentCaches.includes(cacheName));
+         return cacheNames.filter((cacheName) => !currentCaches.includes(cacheName));
         })
         .then((cachesToDelete) => {
           return Promise.all(
@@ -41,7 +45,7 @@ const FILES_TO_CACHE = [
   });
   
   self.addEventListener('fetch', (event) => {
-    if (event.request.url.startsWith(self.location.origin)) {
+    if (event.request.url.includes("/api/")) {
       event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
           if (cachedResponse) {
