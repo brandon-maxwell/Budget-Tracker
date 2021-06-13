@@ -51,21 +51,24 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // handle DATA_CACHE_NAME GET requests for data from /api routes
-  if (event.request.url.includes("/api/")) {
-    // make network request and fallback to cache if network request fails (offline)
-    event.respondWith(
-      caches.open(DATA_CACHE_NAME).then(cache => {
-        return fetch(event.request)
-          .then(response => {
+ // handle DATA_CACHE_NAME GET requests for data from /api routes
+ if (event.request.url.includes("/api/")) {
+  // make network request and fallback to cache if network request fails (offline)
+  event.respondWith(
+    caches.open(DATA_CACHE_NAME).then(async cache => {
+      let responseResolved = await fetch(event.request)
+        .then(response => {
+          if (response.status === 200) {
             cache.put(event.request, response.clone());
-            return response;
-          })
-          .catch(() => caches.match(event.request));
-      })
-    );
-    return;
-  }
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request));
+      return responseResolved;
+    })
+  );
+  return;
+}
 
   // use cache first for all other requests for performance
   event.respondWith(
